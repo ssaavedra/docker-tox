@@ -26,7 +26,7 @@ RUN set -x && \
 
 RUN pyenv local 3.6.0 && \
     python -m pip install -U pip && \
-    python -m pip install tox==2.3.2 && \
+    python -m pip install tox==2.7.0 && \
     pyenv local --unset && \
     pyenv rehash
 
