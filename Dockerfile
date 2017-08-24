@@ -1,28 +1,31 @@
-FROM themattrix/pyenv
+FROM ubuntu:16.04
 
 MAINTAINER ssaavedra
 
-# Install git so that we ccan work with pbr-based projects
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+ENV LANG en_US.UTF-8
 
-RUN groupadd -r tox --gid=999 && \
-    useradd -m -r -g tox --uid=999 tox
+# Install git so that we can work with pbr-based projects
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git ca-certificates locales && \
+    apt-get install -y --no-install-recommends \
+        make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev llvm libncurses5-dev xz-utils \
+        curl wget ca-certificates && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
-# Install gosu to run tox as the "tox" user instead of as root.
-# https://github.com/tianon/gosu#from-debian
-ENV GOSU_VERSION 1.10
-RUN set -x && \
-    apt-get update && apt-get install -y --no-install-recommends ca-certificates wget && rm -rf /var/lib/apt/lists/* && \
-    dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')" && \
-    wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch" && \
-    wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc" && \
-    export GNUPGHOME="$(mktemp -d)" && \
-    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && \
-    gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu && \
-    rm -r "$GNUPGHOME" /usr/local/bin/gosu.asc && \
-    chmod +x /usr/local/bin/gosu && \
-    gosu nobody true && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ARG PYENV_VERSION=v1.1.3
+
+RUN git clone https://github.com/yyuu/pyenv.git --depth=50 .pyenv && (cd .pyenv && git checkout $PYENV_VERSION)
+
+ENV PYENV_ROOT="/.pyenv" \
+    PATH="/.pyenv/bin:/.pyenv/shims:$PATH"
+
+COPY python-versions.txt ./
+
+RUN xargs -P 4 -n 1 pyenv install < python-versions.txt && \
+            pyenv global $(pyenv versions --bare) && \
+            find $PYENV_ROOT/versions -type d '(' -name '__pycache__' -o -name 'test' -o -name 'tests' ')' -exec rm -rfv '{}' + && \
+            find $PYENV_ROOT/versions -type f '(' -name '*.py[co]' -o -name '*.exe' ')' -exec rm -fv '{}' +
 
 RUN pyenv local 3.6.2 && \
     python -m pip install -U pip && \
@@ -32,6 +35,8 @@ RUN pyenv local 3.6.2 && \
 
 WORKDIR /app
 VOLUME /src
+
+USER 1000:1000
 
 COPY docker-entrypoint.sh /
 
