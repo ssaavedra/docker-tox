@@ -1,6 +1,9 @@
 FROM themattrix/pyenv
 
-MAINTAINER Matthew Tardiff <mattrix@gmail.com>
+MAINTAINER ssaavedra
+
+# Install git so that we ccan work with pbr-based projects
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r tox --gid=999 && \
     useradd -m -r -g tox --uid=999 tox
