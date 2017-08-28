@@ -36,6 +36,4 @@ RUN pyenv local 3.6.2 && \
 WORKDIR /app
 VOLUME /src
 
-USER 1000:1000
-
 CMD ["tox"]
