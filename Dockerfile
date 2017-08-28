@@ -13,9 +13,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
-ARG PYENV_VERSION=v1.1.3
+ARG PYENV_REPO_VERSION=v1.1.3
 
-RUN git clone https://github.com/yyuu/pyenv.git --depth=50 .pyenv && (cd .pyenv && git checkout $PYENV_VERSION)
+RUN git clone https://github.com/yyuu/pyenv.git --depth=50 .pyenv && (cd .pyenv && git checkout $PYENV_REPO_VERSION)
 
 ENV PYENV_ROOT="/.pyenv" \
     PATH="/.pyenv/bin:/.pyenv/shims:$PATH"
