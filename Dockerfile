@@ -38,7 +38,4 @@ VOLUME /src
 
 USER 1000:1000
 
-COPY docker-entrypoint.sh /
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["tox"]
